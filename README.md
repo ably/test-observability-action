@@ -2,6 +2,10 @@
 
 An action to push junit files to Ably's test observability server.
 
+# Contributing
+
+This repo is readonly. Contributions are done via https://github.com/ably/test-observability-action-src.
+
 # Inputs
 
 - server-url - url to publish results to
