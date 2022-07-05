@@ -4,7 +4,7 @@ An action to push junit files to Ably's test observability server.
 
 # Contributing
 
-This repo is readonly. Contributions are done via https://github.com/ably/test-observability-action-src.
+This repo is readonly. Contributions are done via https://github.com/ably/test-observability-action.
 
 # Inputs
 
@@ -17,7 +17,7 @@ This repo is readonly. Contributions are done via https://github.com/ably/test-o
 ```
       - name: Upload test results
         if: always()
-        uses: ably/test-observability-action@main
+        uses: ably/test-observability-action@v1
         with:
           server-auth: ${{ secrets.TEST_OBSERVABLILITY_SERVER_AUTH }}
           path: '.'
