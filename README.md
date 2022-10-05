@@ -1,24 +1,22 @@
 # Test Observability Action
 
-An action to push junit files to Ably's test observability server.
+An action to push JUnit files to Ably's test observability server.
 
-# Contributing
+## Inputs
 
-This repo is readonly. Contributions are done via https://github.com/ably/test-observability-action.
+- `server-url`: the server to publish results to - see [action.yml](./action.yml) for the default value
+- `server-auth`: authentication key for the server
+- `path`: where to look for `*.junit` files
 
-# Inputs
+## Example
 
-- server-url - url to publish results to
-- server-auth - auth key for server
-- path - path to look for *.junit files
-
-# Example
+Workflow step:
 
 ```
-      - name: Upload test results
-        if: always()
-        uses: ably/test-observability-action@v1
-        with:
-          server-auth: ${{ secrets.TEST_OBSERVABLILITY_SERVER_AUTH }}
-          path: '.'
+- name: Upload test results
+  if: always()
+  uses: ably/test-observability-action@v1
+  with:
+    server-auth: ${{ secrets.TEST_OBSERVABLILITY_SERVER_AUTH }}
+    path: '.'
 ```
