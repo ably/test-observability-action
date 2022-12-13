@@ -1,0 +1,33 @@
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js version specified in .nvmrc
+        uses: actions/setup-node@v2
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install NPM packages
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Package
+        run: npm run package
+
+      - name: Test action
+        uses: './'
+        with:
+          server-url: 'https://test-observability.herokuapp.com'
+          server-auth: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
+          path: 'junit'
