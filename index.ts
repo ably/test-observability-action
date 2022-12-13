@@ -8,13 +8,13 @@ import {got} from 'got';
 // eslint-disable-next-line require-jsdoc
 async function main() {
   const auth = core.getInput('server-auth', {required: true});
-  const url = new URL(core.getInput('server-url', {required: true}));
+  const serverUrl = new URL(core.getInput('server-url', {required: true}));
   const reportPath = core.getInput('path', {required: true});
 
   const globber = await glob.create(path.join(reportPath, '*.junit'));
   const results = await globber.glob();
 
-  url.pathname = path.join(url.pathname, 'uploads');
+  const endpointUrl = new URL('uploads', serverUrl);
 
   if (results.length === 0) {
     throw new Error(
@@ -28,9 +28,11 @@ async function main() {
     const b64 = Buffer.from(data).toString('base64');
     const owner = github.context.repo.owner;
 
+    const githubRepository = owner + '/' + github.context.repo.repo;
+
     const body = {
       junit_report_xml: b64,
-      github_repository: owner + '/' + github.context.repo.repo,
+      github_repository: githubRepository,
       github_sha: github.context.sha,
       github_ref_name: process.env.GITHUB_REF_NAME,
       github_action: github.context.action,
@@ -49,7 +51,7 @@ async function main() {
       'Test-Observability-Auth-Key': auth,
     };
 
-    const response = await got.post(url.toString(), {
+    const response = await got.post(endpointUrl.toString(), {
       headers,
       json: body,
     });
@@ -63,7 +65,17 @@ async function main() {
       return;
     }
 
-    console.log('Test results uploaded successfully');
+    const upload = JSON.parse(response.body);
+
+    const uploadUrlPath = path.join(
+        'repos',
+        githubRepository,
+        'uploads',
+        upload.id,
+    );
+    const uploadUrl = new URL(uploadUrlPath, serverUrl);
+
+    console.log(`Test results uploaded successfully: ${uploadUrl}`);
   };
 }
 
