@@ -5,6 +5,7 @@ inputs:
   server-auth:
     description: 'auth key to publish to server'
     required: true
+    default: ${{ secrets.TEST_OBSERVABLILITY_SERVER_AUTH_KEY }}
   server-url:
     description: 'url to the test observability website'
     required: false
