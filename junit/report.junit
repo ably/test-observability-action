@@ -1,0 +1,10 @@
+<testsuites tests="3" failures="1">
+    <testsuite name="test-observability-action test" tests="3" failures="1" skipped="1" time="2">
+        <testcase classname="pass" name="passed_test" time="1">
+        </testcase>
+        <testcase classname="fail" name="failed_test" time="1">
+            <failure message="failure message">
+            </failure>
+        </testcase>
+    </testsuite>
+</testsuites>
