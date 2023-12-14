@@ -5,8 +5,19 @@ on:
       - main
 
 jobs:
+  # An empty job, to allow us to demonstrate how to use job-index inside a
+  # matrix job that has preceding jobs.
+  first-job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Nothing to see here"
+
   check:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Arbitrary; just used so that we can execute inside a matrix job.
+        some-value: [1, 2]
     steps:
       - uses: actions/checkout@v2
 
@@ -31,3 +42,16 @@ jobs:
           server-url: 'https://test-observability.herokuapp.com'
           server-auth: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
           path: 'junit'
+
+      - name: Calculate index of job within workflow
+        # `check` job + the current job’s index within the matrix
+        run: echo "JOB_INDEX=$((1 + ${{ strategy.job-index }}))" >> $GITHUB_ENV
+
+      - name: Test action with job-index
+        uses: './'
+        with:
+          server-url: 'https://test-observability.herokuapp.com'
+          server-auth: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
+          path: 'junit'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          job-index: ${{ env.JOB_INDEX }}

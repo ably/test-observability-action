@@ -13,6 +13,12 @@ inputs:
     description: 'path to .junit report files'
     required: false
     default: 'junit'
+  github-token:
+    description: 'a GitHub access token; if the repository is private then it must have `repo` scope'
+    required: false
+  job-index:
+    description: 'the index to which the current job corresponds in the response from the "list jobs for a workflow run attempt" GitHub API (https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run-attempt)'
+    required: false
 runs:
   using: 'node16'
   main: 'dist/index.js'

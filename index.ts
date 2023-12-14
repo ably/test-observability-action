@@ -5,6 +5,55 @@ import fs from 'fs';
 import path from 'path';
 import {got} from 'got';
 
+/**
+ * Fetches the currently-running job from the GitHub API,
+ * so that we can add a link to it in the upload.
+ *
+ * It’s a bit surprising that there’s no built-in functionality
+ * for this (see https://github.com/orgs/community/discussions/8945).
+ */
+async function fetchJob() {
+  const githubToken = core.getInput('github-token');
+  if (!githubToken.length) {
+    return null;
+  }
+
+  const octokit = github.getOctokit(githubToken);
+  const response = await octokit.rest.actions.listJobsForWorkflowRunAttempt(
+      {
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        run_id: github.context.runId,
+        attempt_number: parseInt(process.env.GITHUB_RUN_ATTEMPT!),
+      },
+  );
+
+  const jobs = response.data.jobs;
+
+  const jobIndexInput = core.getInput('job-index');
+
+  if (jobs.length > 1 && !jobIndexInput.length) {
+    throw new Error(
+        `Got ${jobs.length} jobs from GitHub API \
+         but don’t know which one to pick. You need to \
+         provide a \`job-index\` input.`,
+    );
+  }
+
+  const jobIndex = parseInt(jobIndexInput);
+
+  if (jobIndex >= jobs.length) {
+    throw new Error(
+        `The \`job-index\` input has value ${jobIndex}, \
+        but there are only ${jobs.length} jobs. This \
+        action does not currently handle pagination.`);
+  }
+
+  const job = jobs[jobIndex];
+
+  return job;
+}
+
 // eslint-disable-next-line require-jsdoc
 async function main() {
   const auth = core.getInput('server-auth', {required: true});
@@ -22,6 +71,7 @@ async function main() {
     );
   }
 
+  const job = await fetchJob();
 
   for (const [i, file] of results.entries()) {
     const data = fs.readFileSync(file);
@@ -44,6 +94,8 @@ async function main() {
       iteration: i + 1,
       github_base_ref: process.env.GITHUB_BASE_REF || null,
       github_head_ref: process.env.GITHUB_HEAD_REF || null,
+      github_job_api_url: job?.url ?? null,
+      github_job_html_url: job?.html_url ?? null,
     };
 
 
