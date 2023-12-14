@@ -5,6 +5,72 @@ import fs from 'fs';
 import path from 'path';
 import {got} from 'got';
 
+/**
+ * Fetches the currently-running job from the GitHub API,
+ * so that we can add a link to it in the upload.
+ *
+ * It’s a bit surprising that there’s no built-in functionality
+ * for this (see e.g. https://stackoverflow.com/questions/71240338/obtain-job-id-from-a-workflow-run-using-contexts
+ * or https://github.com/orgs/community/discussions/8945).
+ */
+async function fetchJob() {
+  const githubToken = core.getInput('github-token');
+  if (!githubToken.length) {
+    return null;
+  }
+
+  const octokit = github.getOctokit(githubToken);
+  const response = await octokit.rest.actions.listJobsForWorkflowRunAttempt(
+      {
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        run_id: github.context.runId,
+        attempt_number: parseInt(process.env.GITHUB_RUN_ATTEMPT!),
+      },
+  );
+
+  const jobs = response.data.jobs;
+
+  const jobNameInput = core.getInput('job-name');
+  const jobName = jobNameInput.length > 0 ? jobNameInput : null;
+
+  if (jobName === null) {
+    if (jobs.length === 0) {
+      throw new Error(
+          'Got no jobs from GitHub API.',
+      );
+    }
+
+    if (jobs.length > 1) {
+      throw new Error(
+          `Got ${jobs.length} jobs from GitHub API \
+           but don’t know which one to pick. You need to \
+           provide a \`job-name\` input.`,
+      );
+    }
+
+    return jobs[0];
+  }
+
+  const matchingJobs = jobs.filter((job) => job.name === jobName);
+
+  if (matchingJobs.length === 0) {
+    throw new Error(
+        `The GitHub API response contains no job whose \`name\` is ${jobName}. \
+This action does not currently handle pagination.`,
+    );
+  }
+
+  if (matchingJobs.length > 1) {
+    throw new Error(
+        `The GitHub API response contains multiple jobs \
+whose \`name\` is ${jobName}.`,
+    );
+  }
+
+  return matchingJobs[0];
+}
+
 // eslint-disable-next-line require-jsdoc
 async function main() {
   const auth = core.getInput('server-auth', {required: true});
@@ -22,6 +88,7 @@ async function main() {
     );
   }
 
+  const job = await fetchJob();
 
   for (const [i, file] of results.entries()) {
     const data = fs.readFileSync(file);
@@ -44,6 +111,8 @@ async function main() {
       iteration: i + 1,
       github_base_ref: process.env.GITHUB_BASE_REF || null,
       github_head_ref: process.env.GITHUB_HEAD_REF || null,
+      github_job_api_url: job?.url ?? null,
+      github_job_html_url: job?.html_url ?? null,
     };
 
 
