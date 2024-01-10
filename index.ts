@@ -4,6 +4,7 @@ import * as glob from '@actions/glob';
 import fs from 'fs';
 import path from 'path';
 import {got} from 'got';
+import util from 'util';
 
 /**
  * Fetches the currently-running job from the GitHub API,
@@ -32,6 +33,8 @@ async function fetchJob() {
   const jobs = response.data.jobs;
 
   const jobIndexInput = core.getInput('job-index');
+  console.log('jobIndexInput is ', jobIndexInput, 'jobs are',
+      util.inspect(jobs, {depth: null}));
 
   if (jobs.length > 1 && !jobIndexInput.length) {
     throw new Error(
