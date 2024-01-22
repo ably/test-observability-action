@@ -37,6 +37,7 @@ async function fetchJob() {
   console.log("Here is the ID for this job:", uuid);
 
   console.log("The context is", github.context);
+  console.log("The environment is", process.env);
 
   for (const job of jobs) {
     const logs = await octokit.rest.actions.downloadJobLogsForWorkflowRun({ owner: github.context.repo.owner, repo: github.context.repo.repo, job_id: job.id });
