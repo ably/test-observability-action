@@ -36,6 +36,8 @@ async function fetchJob() {
   const uuid = randomUUID()
   console.log("Here is the ID for this job:", uuid);
 
+  console.log("The context is", github.context);
+
   for (const job of jobs) {
     const logs = await octokit.rest.actions.downloadJobLogsForWorkflowRun({ owner: github.context.repo.owner, repo: github.context.repo.repo, job_id: job.id });
     const response = await got.get(logs.url);
