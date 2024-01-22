@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {got} from 'got';
 import util from 'util';
+import {randomUUID} from 'crypto';
 
 /**
  * Fetches the currently-running job from the GitHub API,
@@ -31,6 +32,15 @@ async function fetchJob() {
   );
 
   const jobs = response.data.jobs;
+
+  const uuid = randomUUID()
+  console.log("Here is the ID for this job:", uuid);
+
+  for (const job of jobs) {
+    const logs = await octokit.rest.actions.downloadJobLogsForWorkflowRun({ owner: github.context.repo.owner, repo: github.context.repo.repo, job_id: job.id });
+    const response = await got.get(logs.url);
+    console.log("got logs", response.body);
+  }
 
   const jobIndexInput = core.getInput('job-index');
   console.log('jobIndexInput is ', jobIndexInput, 'jobs are',
