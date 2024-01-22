@@ -18,6 +18,7 @@ jobs:
       matrix:
         # Arbitrary; just used so that we can execute inside a matrix job.
         some-value: [1, 2]
+    name: My famous job with params ${{ strategy.matrix.some-value }}
     steps:
       - uses: actions/checkout@v2
 
