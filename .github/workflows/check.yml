@@ -4,16 +4,22 @@ on:
     branches:
       - main
 
+permissions: {}
+
 jobs:
   # An empty job, to allow us to demonstrate how to use job-name inside a
   # matrix job that has preceding jobs.
   first-job:
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - run: echo "Nothing to see here"
 
   check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     strategy:
       matrix:
         # Arbitrary; just used so that we can execute inside a matrix job.
