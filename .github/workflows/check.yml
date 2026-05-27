@@ -4,25 +4,33 @@ on:
     branches:
       - main
 
+permissions: {}
+
 jobs:
   # An empty job, to allow us to demonstrate how to use job-name inside a
   # matrix job that has preceding jobs.
   first-job:
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - run: echo "Nothing to see here"
 
   check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     strategy:
       matrix:
         # Arbitrary; just used so that we can execute inside a matrix job.
         some-value: [1, 2]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Use Node.js version specified in .nvmrc
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
